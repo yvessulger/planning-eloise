@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Mon Planning">
+<title>Mon Planning ✨</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #FAF8FF;
+  --surface: #FFFFFF;
+  --surface2: #F3F0FA;
+  --border: rgba(120,80,200,0.12);
+  --text: #1E1B2E;
+  --text2: #6B6080;
+  --text3: #B0A8C8;
+  --purple: #7B5EA7;
+  --purple-light: #EEE8FF;
+  --purple-mid: #C4B0F0;
+  --green: #2BB574;
+  --green-bg: #E6F9F0;
+  --green-text: #1A7A4A;
+  --amber: #F5A623;
+  --amber-bg: #FEF4DC;
+  --amber-text: #7A5000;
+  --red: #E8453C;
+  --red-bg: #FDEEEC;
+  --red-text: #8A1F1A;
+  --blue: #4A7FD9;
+  --blue-bg: #EAF1FB;
+  --blue-text: #1A408A;
+  --pink: #E0609A;
+  --pink-bg: #FDECF3;
+  --pink-text: #7A1F4A;
+  --teal: #1DA88A;
+  --teal-bg: #E5F8F4;
+  --teal-text: #0A5E4A;
+  --radius: 18px;
+  --radius-sm: 12px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Nunito', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100dvh;
+  overflow-x: hidden;
+}
+
+/* ── APP SHELL ── */
+.app { max-width: 480px; margin: 0 auto; padding-bottom: calc(90px + var(--safe-bottom)); }
+
+/* ── HEADER ── */
+.header {
+  background: linear-gradient(135deg, #7B5EA7 0%, #A07FCC 60%, #C4A0E8 100%);
+  padding: calc(var(--safe-top) + 20px) 20px 20px;
+  position: sticky; top: 0; z-index: 100;
+}
+.header-top { display: flex; align-items: flex-start; justify-content: space-between; }
+.header h1 { font-size: 26px; font-weight: 900; color: #fff; letter-spacing: -0.5px; }
+.header-sub { font-size: 13px; color: rgba(255,255,255,0.75); margin-top: 2px; font-weight: 600; }
+.streak { background: rgba(255,255,255,0.2); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.3); border-radius: 20px; padding: 6px 12px; text-align: center; }
+.streak-num { font-size: 20px; font-weight: 900; color: #FFD700; line-height: 1; }
+.streak-lbl { font-size: 10px; color: rgba(255,255,255,0.85); font-weight: 700; }
+
+/* energy in header */
+.energy-wrap { margin-top: 14px; }
+.energy-label { font-size: 12px; color: rgba(255,255,255,0.8); font-weight: 700; margin-bottom: 6px; }
+.energy-btns { display: flex; gap: 8px; }
+.energy-btn {
+  flex: 1; padding: 8px 4px; border-radius: 10px;
+  border: 2px solid rgba(255,255,255,0.3);
+  background: rgba(255,255,255,0.15); backdrop-filter: blur(4px);
+  font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 800;
+  cursor: pointer; color: rgba(255,255,255,0.9); text-align: center; transition: all 0.2s;
+}
+.energy-btn.active-low  { background: var(--red-bg);   border-color: var(--red);   color: var(--red-text); }
+.energy-btn.active-med  { background: var(--amber-bg); border-color: var(--amber); color: var(--amber-text); }
+.energy-btn.active-high { background: var(--green-bg); border-color: var(--green); color: var(--green-text); }
+
+/* ── BOTTOM NAV ── */
+.bottom-nav {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  display: flex;
+  padding-bottom: var(--safe-bottom);
+  z-index: 100;
+  max-width: 480px; margin: 0 auto;
+}
+.nav-btn {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  padding: 10px 4px 8px; border: none; background: none;
+  font-family: 'Nunito', sans-serif; font-size: 11px; font-weight: 700;
+  color: var(--text3); cursor: pointer; transition: color 0.2s; gap: 3px;
+}
+.nav-btn.active { color: var(--purple); }
+.nav-icon { font-size: 22px; line-height: 1; }
+
+/* ── CONTENT ── */
+.content { padding: 16px 16px 0; }
+
+/* ── PROGRESS CARD ── */
+.progress-card {
+  background: var(--surface); border-radius: var(--radius);
+  padding: 16px; margin-bottom: 14px;
+  border: 1px solid var(--border);
+  box-shadow: 0 2px 12px rgba(123,94,167,0.08);
+}
+.progress-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.progress-title { font-size: 14px; font-weight: 800; }
+.progress-pct { font-size: 20px; font-weight: 900; color: var(--purple); }
+.progress-track { height: 12px; background: var(--surface2); border-radius: 6px; overflow: hidden; }
+.progress-fill {
+  height: 12px; border-radius: 6px;
+  background: linear-gradient(90deg, #7B5EA7, #C4A0E8);
+  transition: width 0.6s cubic-bezier(0.34,1.56,0.64,1);
+}
+.stats-row { display: flex; gap: 8px; margin-top: 12px; }
+.stat-pill {
+  flex: 1; background: var(--surface2); border-radius: 10px;
+  padding: 8px 4px; text-align: center;
+}
+.stat-num { font-size: 18px; font-weight: 900; color: var(--purple); }
+.stat-lbl { font-size: 10px; font-weight: 700; color: var(--text2); }
+
+/* ── DAY CARDS ── */
+.day-card {
+  background: var(--surface); border-radius: var(--radius);
+  margin-bottom: 10px; border: 1px solid var(--border);
+  box-shadow: 0 2px 8px rgba(123,94,167,0.06);
+  overflow: hidden; transition: box-shadow 0.2s;
+}
+.day-card.today { border-color: var(--purple-mid); box-shadow: 0 4px 16px rgba(123,94,167,0.18); }
+.day-header {
+  display: flex; align-items: center; padding: 14px 16px;
+  cursor: pointer; gap: 12px;
+}
+.day-dot { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 900; flex-shrink: 0; }
+.day-dot.today { background: var(--purple); color: #fff; }
+.day-dot.past  { background: var(--surface2); color: var(--text3); }
+.day-dot.future{ background: var(--purple-light); color: var(--purple); }
+.day-info { flex: 1; }
+.day-name { font-size: 15px; font-weight: 800; }
+.day-date { font-size: 12px; color: var(--text2); font-weight: 600; }
+.day-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+.day-count { font-size: 12px; font-weight: 700; color: var(--text2); }
+.day-chevron { font-size: 16px; color: var(--text3); transition: transform 0.2s; }
+.day-chevron.open { transform: rotate(90deg); }
+
+.day-tasks { padding: 0 16px 12px; border-top: 1px solid var(--border); }
+
+/* ── TASK ITEMS ── */
+.task-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 10px 0; border-bottom: 1px solid var(--border);
+}
+.task-item:last-child { border-bottom: none; }
+
+.task-check {
+  width: 24px; height: 24px; border-radius: 50%;
+  border: 2.5px solid var(--purple-mid);
+  cursor: pointer; flex-shrink: 0; margin-top: 1px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+  background: white;
+}
+.task-check.done { background: var(--green); border-color: var(--green); transform: scale(1.1); }
+.task-check.done::after {
+  content: ''; display: block; width: 7px; height: 4px;
+  border-left: 2.5px solid white; border-bottom: 2.5px solid white;
+  transform: rotate(-45deg) translate(1px, -1px);
+}
+
+.task-body { flex: 1; min-width: 0; }
+.task-top { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.mat-badge {
+  font-size: 10px; font-weight: 800; padding: 2px 8px;
+  border-radius: 20px; white-space: nowrap; flex-shrink: 0;
+}
+.task-title { font-size: 14px; font-weight: 700; line-height: 1.3; }
+.task-title.done { text-decoration: line-through; color: var(--text3); }
+.task-type-lbl { font-size: 11px; color: var(--text3); font-weight: 600; margin-top: 2px; }
+.task-delete { font-size: 16px; color: var(--text3); cursor: pointer; padding: 2px 4px; flex-shrink: 0; }
+
+/* steps */
+.steps { margin-top: 8px; display: flex; flex-direction: column; gap: 4px; }
+.step-row { display: flex; align-items: center; gap: 8px; }
+.step-box {
+  width: 16px; height: 16px; border-radius: 4px;
+  border: 2px solid var(--purple-mid); cursor: pointer; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: white; transition: all 0.2s;
+}
+.step-box.done { background: var(--teal); border-color: var(--teal); }
+.step-box.done::after {
+  content: ''; display: block; width: 5px; height: 3px;
+  border-left: 2px solid white; border-bottom: 2px solid white;
+  transform: rotate(-45deg) translate(0, -1px);
+}
+.step-lbl { font-size: 12px; color: var(--text2); font-weight: 600; }
+.step-lbl.done { text-decoration: line-through; color: var(--text3); }
+.steps-progress { font-size: 11px; color: var(--text3); font-weight: 700; margin-top: 4px; }
+
+/* add task */
+.add-task-btn {
+  width: 100%; margin-top: 8px; padding: 9px;
+  border: 2px dashed var(--purple-mid); border-radius: var(--radius-sm);
+  background: none; cursor: pointer; color: var(--purple);
+  font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 800;
+  transition: background 0.15s;
+}
+.add-task-btn:hover { background: var(--purple-light); }
+
+.add-form {
+  margin-top: 10px; background: var(--surface2);
+  border-radius: var(--radius-sm); padding: 12px;
+}
+.add-form input, .add-form select, .add-form textarea {
+  width: 100%; padding: 9px 12px; border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border); background: white;
+  font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 600;
+  color: var(--text); margin-bottom: 8px; outline: none;
+  transition: border-color 0.15s;
+}
+.add-form input:focus, .add-form select:focus, .add-form textarea:focus {
+  border-color: var(--purple);
+}
+.add-form textarea { height: 72px; resize: none; }
+.form-row { display: flex; gap: 8px; }
+.form-row > * { flex: 1; margin-bottom: 8px; }
+.form-actions { display: flex; gap: 8px; margin-top: 4px; }
+.btn-save {
+  flex: 1; padding: 10px; background: var(--purple);
+  color: white; border: none; border-radius: var(--radius-sm);
+  font-family: 'Nunito', sans-serif; font-size: 14px; font-weight: 800; cursor: pointer;
+}
+.btn-cancel {
+  padding: 10px 16px; border: 2px solid var(--border); background: white;
+  color: var(--text2); border-radius: var(--radius-sm);
+  font-family: 'Nunito', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer;
+}
+
+/* ── EXAMS ── */
+.exam-card {
+  background: var(--surface); border-radius: var(--radius);
+  padding: 16px; margin-bottom: 10px;
+  border: 1px solid var(--border);
+  box-shadow: 0 2px 8px rgba(123,94,167,0.06);
+}
+.exam-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+.exam-mat { font-size: 16px; font-weight: 900; }
+.exam-sujet { font-size: 12px; color: var(--text2); font-weight: 600; margin-top: 2px; }
+.urgency-pill {
+  font-size: 12px; font-weight: 800; padding: 4px 12px;
+  border-radius: 20px; white-space: nowrap; flex-shrink: 0;
+}
+.urgent { background: var(--red-bg); color: var(--red-text); }
+.soon    { background: var(--amber-bg); color: var(--amber-text); }
+.ok      { background: var(--green-bg); color: var(--green-text); }
+.exam-date-str { font-size: 12px; color: var(--text2); font-weight: 600; margin-bottom: 10px; }
+
+.exam-prep-label { font-size: 12px; font-weight: 800; color: var(--text2); margin-bottom: 8px; }
+.prep-step { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.prep-step-lbl { font-size: 12px; font-weight: 700; color: var(--text2); width: 120px; flex-shrink: 0; }
+.prep-range { flex: 1; accent-color: var(--purple); }
+.prep-pct { font-size: 12px; font-weight: 800; color: var(--purple); width: 30px; text-align: right; }
+.exam-global { margin-top: 8px; }
+.exam-global-track { height: 8px; background: var(--surface2); border-radius: 4px; overflow: hidden; }
+.exam-global-fill { height: 8px; border-radius: 4px; transition: width 0.4s ease; }
+.exam-delete { font-size: 12px; color: var(--text3); font-weight: 700; cursor: pointer; margin-top: 10px; text-align: right; }
+
+.add-exam-btn {
+  width: 100%; padding: 12px;
+  border: 2px dashed var(--purple-mid); border-radius: var(--radius);
+  background: none; cursor: pointer; color: var(--purple);
+  font-family: 'Nunito', sans-serif; font-size: 14px; font-weight: 800;
+  margin-bottom: 10px;
+}
+
+/* ── TIPS ── */
+.tip-card {
+  background: var(--surface); border-radius: var(--radius);
+  padding: 14px 16px; margin-bottom: 10px;
+  border: 1px solid var(--border); display: flex; gap: 12px; align-items: flex-start;
+}
+.tip-icon {
+  width: 40px; height: 40px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; flex-shrink: 0;
+}
+.tip-title { font-size: 14px; font-weight: 800; margin-bottom: 3px; }
+.tip-desc { font-size: 12px; color: var(--text2); font-weight: 600; line-height: 1.5; }
+
+/* ── APP COLORS (badges) ── */
+.mat-math  { background: var(--blue-bg);   color: var(--blue-text); }
+.mat-fr    { background: var(--pink-bg);   color: var(--pink-text); }
+.mat-ang   { background: var(--surface2);  color: var(--text2); }
+.mat-hist  { background: var(--amber-bg);  color: var(--amber-text); }
+.mat-sci   { background: var(--teal-bg);   color: var(--teal-text); }
+.mat-all   { background: var(--red-bg);    color: var(--red-text); }
+.mat-autre { background: var(--purple-light); color: var(--purple); }
+
+/* ── SECTION TITLE ── */
+.section-title { font-size: 18px; font-weight: 900; margin: 4px 0 14px; letter-spacing: -0.3px; }
+
+/* ── EMPTY STATE ── */
+.empty { text-align: center; padding: 24px 16px; color: var(--text3); font-size: 13px; font-weight: 700; }
+
+/* ── HIDDEN ── */
+.hidden { display: none !important; }
+
+/* ── TAB CONTENT ── */
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* ── CONFIRM TOAST ── */
+.toast {
+  position: fixed; top: calc(var(--safe-top) + 100px); left: 50%; transform: translateX(-50%) translateY(-20px);
+  background: var(--green); color: white; border-radius: 20px;
+  padding: 10px 20px; font-size: 14px; font-weight: 800;
+  opacity: 0; transition: all 0.3s; pointer-events: none; z-index: 999; white-space: nowrap;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-top">
+      <div>
+        <div class="header h1" style="font-size:26px;font-weight:900;color:#fff;letter-spacing:-0.5px;">✨ Mon Planning</div>
+        <div class="header-sub" id="today-label">Chargement...</div>
+      </div>
+      <div class="streak">
+        <div class="streak-num" id="streak-num">0</div>
+        <div class="streak-lbl">🔥 jours</div>
+      </div>
+    </div>
+    <div class="energy-wrap">
+      <div class="energy-label">Mon énergie aujourd'hui :</div>
+      <div class="energy-btns">
+        <button class="energy-btn" id="e-low"  onclick="setEnergy('low')">😴 Bof</button>
+        <button class="energy-btn" id="e-med"  onclick="setEnergy('med')">😊 Ok</button>
+        <button class="energy-btn" id="e-high" onclick="setEnergy('high')">🚀 Top !</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- TAB: SEMAINE -->
+    <div class="tab-content active" id="tab-semaine">
+      <div class="section-title">Cette semaine</div>
+
+      <div class="progress-card">
+        <div class="progress-row">
+          <div class="progress-title">Progression</div>
+          <div class="progress-pct" id="prog-pct">0%</div>
+        </div>
+        <div class="progress-track"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+        <div class="stats-row">
+          <div class="stat-pill"><div class="stat-num" id="stat-total">0</div><div class="stat-lbl">Tâches</div></div>
+          <div class="stat-pill"><div class="stat-num" id="stat-done">0</div><div class="stat-lbl">Faites ✓</div></div>
+          <div class="stat-pill"><div class="stat-num" id="stat-left">0</div><div class="stat-lbl">Restantes</div></div>
+        </div>
+      </div>
+
+      <div id="days-container"></div>
+    </div>
+
+    <!-- TAB: EXAMENS -->
+    <div class="tab-content" id="tab-examens">
+      <div class="section-title">Mes examens</div>
+      <div id="exam-container"></div>
+      <button class="add-exam-btn" onclick="showAddExam()">+ Ajouter un examen</button>
+      <div id="add-exam-form" class="add-form hidden">
+        <input type="text" id="exam-mat" placeholder="Matière (ex: Maths)">
+        <input type="text" id="exam-sujet" placeholder="Sujet (ex: fractions, verbes...)">
+        <input type="date" id="exam-date">
+        <div class="form-actions">
+          <button class="btn-cancel" onclick="hideAddExam()">Annuler</button>
+          <button class="btn-save" onclick="addExam()">Ajouter ✓</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: ASTUCES -->
+    <div class="tab-content" id="tab-tips">
+      <div class="section-title">Astuces pour toi 💡</div>
+      <div id="tips-container"></div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /app -->
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <button class="nav-btn active" id="nav-semaine" onclick="switchTab('semaine')">
+    <span class="nav-icon">📅</span>Semaine
+  </button>
+  <button class="nav-btn" id="nav-examens" onclick="switchTab('examens')">
+    <span class="nav-icon">📝</span>Examens
+  </button>
+  <button class="nav-btn" id="nav-tips" onclick="switchTab('tips')">
+    <span class="nav-icon">💡</span>Astuces
+  </button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const JOURS = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];
+const MATIERES = ['Maths','Français','Anglais','Histoire-Géo','Sciences','Allemand','Arts','Gym','Autre'];
+const TYPES = ['Devoir écrit','Leçon à apprendre','Exercices','Révision examen','Lecture','Recherche'];
+
+const MAT_CLASS = {
+  'Maths':'mat-math','Français':'mat-fr','Anglais':'mat-ang',
+  'Histoire-Géo':'mat-hist','Sciences':'mat-sci','Allemand':'mat-all'
+};
+function matClass(m){ return MAT_CLASS[m] || 'mat-autre'; }
+
+// ── DATA ──
+let selectedSteps = new Set();
+let customSteps = [];
+window._currentSuggestions = [];
+let D = {
+  energy: null,
+  tasks: [],
+  exams: [],
+  openDays: [],
+  addingDay: null,
+  streak: 0,
+  lastStreakDate: null
+};
+try { const s = localStorage.getItem('eloise_v2'); if(s) D = {...D, ...JSON.parse(s)}; } catch(e){}
+
+function save(){ try{ localStorage.setItem('eloise_v2', JSON.stringify(D)); }catch(e){} }
+
+// ── HELPERS ──
+function todayIdx(){
+  const d = new Date().getDay();
+  return d === 0 ? 6 : d - 1;
+}
+function weekDates(){
+  const now = new Date();
+  const diff = now.getDay() === 0 ? -6 : 1 - now.getDay();
+  const mon = new Date(now); mon.setDate(now.getDate() + diff);
+  return Array.from({length:7}, (_,i) => { const d = new Date(mon); d.setDate(mon.getDate()+i); return d; });
+}
+function fmtShort(d){ return d.toLocaleDateString('fr-CH',{day:'numeric',month:'short'}); }
+function daysUntil(str){
+  const now = new Date(); now.setHours(0,0,0,0);
+  const t = new Date(str); t.setHours(0,0,0,0);
+  return Math.round((t-now)/86400000);
+}
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(()=> t.classList.remove('show'), 2000);
+}
+
+// ── ENERGY ──
+function setEnergy(level){
+  D.energy = level; save();
+  ['low','med','high'].forEach(l => document.getElementById('e-'+l).className = 'energy-btn');
+  document.getElementById('e-'+level).classList.add('active-'+level);
+}
+
+// ── TABS ──
+function switchTab(tab){
+  ['semaine','examens','tips'].forEach(t => {
+    document.getElementById('tab-'+t).classList.toggle('active', t===tab);
+    document.getElementById('nav-'+t).classList.toggle('active', t===tab);
+  });
+  if(tab==='semaine') renderWeek();
+  if(tab==='examens') renderExams();
+  if(tab==='tips') renderTips();
+}
+
+// ── WEEK ──
+function renderWeek(){
+  const dates = weekDates();
+  const ti = todayIdx();
+  const total = D.tasks.length;
+  const done  = D.tasks.filter(t=>t.done).length;
+  const pct   = total ? Math.round(done/total*100) : 0;
+
+  document.getElementById('prog-pct').textContent = pct+'%';
+  document.getElementById('prog-fill').style.width = pct+'%';
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('stat-done').textContent  = done;
+  document.getElementById('stat-left').textContent  = total-done;
+  document.getElementById('today-label').textContent =
+    'Semaine du '+fmtShort(dates[0])+' au '+fmtShort(dates[6]);
+  document.getElementById('streak-num').textContent = D.streak || 0;
+
+  let html = '';
+  dates.forEach((date, idx) => {
+    const dayTasks = D.tasks.filter(t=>t.dayIdx===idx);
+    const doneCnt  = dayTasks.filter(t=>t.done).length;
+    const isOpen   = D.openDays.includes(idx);
+    const isToday  = idx === ti;
+    const isPast   = idx < ti;
+    const dotClass = isToday ? 'today' : isPast ? 'past' : 'future';
+    const chevClass= isOpen ? 'open' : '';
+    const dayInitials = JOURS[idx].substring(0,2);
+
+    let countLabel = '';
+    if(!dayTasks.length) countLabel = 'Rien prévu';
+    else if(doneCnt === dayTasks.length) countLabel = '✅ Tout fait !';
+    else countLabel = `${doneCnt}/${dayTasks.length} fait${doneCnt>1?'s':''}`;
+
+    html += `<div class="day-card${isToday?' today':''}">
+      <div class="day-header" onclick="toggleDay(${idx})">
+        <div class="day-dot ${dotClass}">${dayInitials}</div>
+        <div class="day-info">
+          <div class="day-name">${JOURS[idx]}${isToday?' <span style="font-size:11px;background:var(--purple);color:white;border-radius:8px;padding:1px 7px;vertical-align:middle;">Aujourd\'hui</span>':''}</div>
+          <div class="day-date">${fmtShort(date)}</div>
+        </div>
+        <div class="day-right">
+          <div class="day-count">${countLabel}</div>
+          <div class="day-chevron ${chevClass}">›</div>
+        </div>
+      </div>`;
+
+    if(isOpen){
+      html += '<div class="day-tasks">';
+      if(!dayTasks.length && D.addingDay !== idx){
+        html += '<div class="empty">Rien de prévu — ajoute une tâche !</div>';
+      }
+      dayTasks.forEach(task => {
+        const stepsDone  = task.steps ? task.steps.filter(s=>s.done).length : 0;
+        const stepsTotal = task.steps ? task.steps.length : 0;
+        html += `<div class="task-item">
+          <div class="task-check${task.done?' done':''}" onclick="toggleTask(${task.id})"></div>
+          <div class="task-body">
+            <div class="task-top">
+              <span class="mat-badge ${matClass(task.matiere)}">${task.matiere}</span>
+              <span class="task-title${task.done?' done':''}">${task.title}</span>
+              <span class="task-delete" onclick="deleteTask(${task.id})">✕</span>
+            </div>
+            <div class="task-type-lbl">${task.type}</div>
+            ${task.steps && task.steps.length ? `
+            <div class="steps">
+              ${task.steps.map((s,i)=>`<div class="step-row">
+                <div class="step-box${s.done?' done':''}" onclick="toggleStep(${task.id},${i})"></div>
+                <span class="step-lbl${s.done?' done':''}">${s.text}</span>
+              </div>`).join('')}
+            </div>
+            <div class="steps-progress">${stepsDone}/${stepsTotal} étapes</div>` : ''}
+          </div>
+        </div>`;
+      });
+
+      if(D.addingDay === idx){
+        html += `<div class="add-form" style="margin-top:10px;">
+          <input type="text" id="nt-title" placeholder="Qu'est-ce qu'il faut faire ?">
+          <div class="form-row">
+            <input type="text" id="nt-mat" placeholder="Matière (ex: Maths)" oninput="refreshStepSuggestions()" style="flex:1;margin-bottom:0;">
+            <select id="nt-type" onchange="refreshStepSuggestions()" style="flex:1;">${TYPES.map(t=>`<option>${t}</option>`).join('')}</select>
+          </div>
+          <div id="step-suggestions" style="margin-bottom:8px;"></div>
+          <div id="custom-steps" style="display:flex;flex-direction:column;gap:4px;margin-bottom:8px;"></div>
+          <button type="button" onclick="addCustomStep()" style="width:100%;padding:7px;border:1.5px dashed var(--purple-mid);border-radius:var(--radius-sm);background:none;color:var(--purple);font-family:Nunito,sans-serif;font-size:12px;font-weight:700;cursor:pointer;margin-bottom:4px;">+ Ajouter une étape personnalisée</button>
+          <div class="form-actions">
+            <button class="btn-cancel" onclick="cancelAdd()">Annuler</button>
+            <button class="btn-save" onclick="addTask(${idx})">Ajouter ✓</button>
+          </div>
+        </div>`;
+      } else {
+        html += `<button class="add-task-btn" onclick="showAddTask(${idx})">+ Ajouter une tâche</button>`;
+      }
+      html += '</div>';
+    }
+    html += '</div>';
+  });
+  document.getElementById('days-container').innerHTML = html;
+}
+
+function toggleDay(idx){
+  const i = D.openDays.indexOf(idx);
+  if(i>=0) D.openDays.splice(i,1); else D.openDays.push(idx);
+  save(); renderWeek();
+}
+function showAddTask(idx){
+  D.addingDay = idx;
+  selectedSteps = new Set();
+  customSteps = [];
+  window._currentSuggestions = [];
+  save(); renderWeek();
+  setTimeout(()=>{
+    const el = document.getElementById('nt-title');
+    if(el) el.focus();
+    refreshStepSuggestions();
+  }, 120);
+}
+function cancelAdd(){ D.addingDay = null; selectedSteps = new Set(); customSteps = []; window._currentSuggestions = []; save(); renderWeek(); }
+
+// ── STEP SUGGESTIONS ──
+// Chaque étape : { text, principe, explication }
+// principe = nom court de la technique cognitive
+const STEP_DB = {
+  // LEÇON À APPRENDRE
+  'Maths|Leçon à apprendre': [
+    { text:'📖 Lire la leçon 1 fois lentement', principe:'Lecture active', explication:'Tu lis pour comprendre, pas pour finir vite.' },
+    { text:'✏️ Recopier les formules clés sur une feuille', principe:'Effet de génération', explication:'Écrire soi-même ancre mieux que surligner.' },
+    { text:'🔁 Refaire les exemples du cours sans regarder', principe:'Récupération active', explication:'Forcer ton cerveau à retrouver = mémoriser vraiment.' },
+    { text:'🗣 Expliquer la leçon à voix haute comme si tu l\'enseignais', principe:'Technique Feynman', explication:'Si tu peux l\'expliquer simplement, tu l\'as compris.' },
+    { text:'✅ Faire 2-3 exercices d\'application', principe:'Pratique espacée', explication:'Appliquer juste après = coller l\'info dans ta mémoire.' },
+  ],
+  'Français|Leçon à apprendre': [
+    { text:'📖 Lire la règle ou le cours 1 fois', principe:'Lecture active', explication:'Tu lis pour comprendre, pas pour finir vite.' },
+    { text:'🖊 Écrire la règle dans tes propres mots', principe:'Élaboration', explication:'Reformuler avec tes mots prouve que tu as vraiment compris.' },
+    { text:'💡 Trouver 3 exemples personnels', principe:'Élaboration', explication:'Créer ses propres exemples = ancrer la règle pour de bon.' },
+    { text:'🔁 Te tester : cacher la règle et la réciter', principe:'Récupération active', explication:'Forcer ton cerveau à retrouver = mémoriser vraiment.' },
+    { text:'📝 Faire un exercice d\'application', principe:'Pratique espacée', explication:'Appliquer juste après = coller l\'info dans ta mémoire.' },
+  ],
+  'Anglais|Leçon à apprendre': [
+    { text:'👂 Écouter la prononciation des mots nouveaux (Google Translate)', principe:'Encodage multiple', explication:'Voir + entendre + dire = 3 chemins vers ta mémoire.' },
+    { text:'✏️ Écrire chaque mot + sa traduction + un exemple', principe:'Élaboration', explication:'Plus tu lies un mot à du contexte, plus tu t\'en souviens.' },
+    { text:'🔁 Cache la traduction : retrouve le sens', principe:'Récupération active', explication:'Forcer ton cerveau à retrouver = mémoriser vraiment.' },
+    { text:'🗣 Utilise chaque mot dans une phrase à l\'oral', principe:'Technique Feynman', explication:'Utiliser le mot prouve que tu l\'as vraiment compris.' },
+    { text:'📸 Faire des flashcards (Anki ou papier)', principe:'Répétition espacée', explication:'Revoir au bon moment empêche l\'oubli de s\'installer.' },
+  ],
+  'Histoire-Géo|Leçon à apprendre': [
+    { text:'📖 Lire le cours en surlignant les dates et noms clés', principe:'Lecture active', explication:'Tu lis pour comprendre, pas pour finir vite.' },
+    { text:'🗺 Faire un schéma ou une frise chronologique', principe:'Effet de génération', explication:'Construire un schéma soi-même ancre bien mieux que recopier.' },
+    { text:'❓ Écrire 3 questions sur le cours', principe:'Auto-questionnement', explication:'Se poser des questions oblige à comprendre en profondeur.' },
+    { text:'🔁 Répondre aux questions sans regarder le cours', principe:'Récupération active', explication:'Forcer ton cerveau à retrouver = mémoriser vraiment.' },
+    { text:'🗣 Raconter l\'histoire à voix haute', principe:'Technique Feynman', explication:'Si tu peux raconter sans notes, tu maîtrises le sujet.' },
+  ],
+  'Sciences|Leçon à apprendre': [
+    { text:'📖 Lire le cours et entourer les mots inconnus', principe:'Lecture active', explication:'Identifier ce qu\'on ne comprend pas, c\'est déjà apprendre.' },
+    { text:'🔍 Chercher la définition des mots inconnus', principe:'Élaboration', explication:'Comprendre chaque mot clé = comprendre vraiment le sujet.' },
+    { text:'✏️ Faire un schéma légendé', principe:'Effet de génération', explication:'Construire un schéma soi-même ancre bien mieux que recopier.' },
+    { text:'🔁 Refaire le schéma de mémoire', principe:'Récupération active', explication:'Forcer ton cerveau à retrouver = mémoriser vraiment.' },
+    { text:'🗣 Expliquer le principe à voix haute', principe:'Technique Feynman', explication:'Si tu peux l\'expliquer simplement, tu l\'as compris.' },
+  ],
+  'Allemand|Leçon à apprendre': [
+    { text:'👂 Écouter la prononciation (Google Translate)', principe:'Encodage multiple', explication:'Voir + entendre + dire = 3 chemins vers ta mémoire.' },
+    { text:'✏️ Écrire le mot + genre + traduction + exemple', principe:'Élaboration', explication:'Plus tu lies un mot à du contexte, plus tu t\'en souviens.' },
+    { text:'🔁 Cache la traduction et retrouve le sens', principe:'Récupération active', explication:'Forcer ton cerveau à retrouver = mémoriser vraiment.' },
+    { text:'🗣 Faire des phrases avec les mots nouveaux', principe:'Technique Feynman', explication:'Utiliser le mot prouve que tu l\'as vraiment compris.' },
+    { text:'📸 Flashcards : recto allemand / verso français', principe:'Répétition espacée', explication:'Revoir au bon moment empêche l\'oubli de s\'installer.' },
+  ],
+  'Défaut|Leçon à apprendre': [
+    { text:'📖 Lire le cours 1 fois lentement', principe:'Lecture active', explication:'Tu lis pour comprendre, pas pour finir vite.' },
+    { text:'✏️ Recopier les points importants', principe:'Effet de génération', explication:'Écrire soi-même ancre mieux que surligner.' },
+    { text:'🔁 Fermer le livre et réciter ce qu\'on a retenu', principe:'Récupération active', explication:'Forcer ton cerveau à retrouver = mémoriser vraiment.' },
+    { text:'❓ Se poser des questions sur le cours', principe:'Auto-questionnement', explication:'Se poser des questions oblige à comprendre en profondeur.' },
+    { text:'✅ Vérifier ce qu\'on a oublié', principe:'Correction d\'erreurs', explication:'Repérer ses lacunes maintenant évite de les traîner jusqu\'à l\'exam.' },
+  ],
+
+  // EXERCICES
+  'Maths|Exercices': [
+    { text:'📖 Relire l\'exemple du cours lié à l\'exercice', principe:'Lecture active', explication:'Comprendre l\'exemple type avant de se lancer.' },
+    { text:'✏️ Faire l\'exercice seule, sans regarder le cours', principe:'Récupération active', explication:'Se confronter à la difficulté d\'abord = progresser vraiment.' },
+    { text:'🔍 Si bloquée : chercher un indice, pas la solution', principe:'Effort de récupération', explication:'Chercher soi-même, même si c\'est dur, renforce la mémoire.' },
+    { text:'✅ Vérifier le résultat avec la correction', principe:'Feedback immédiat', explication:'Savoir tout de suite si c\'est juste aide ton cerveau à corriger.' },
+    { text:'❓ Comprendre chaque erreur — pourquoi je me suis trompée ?', principe:'Correction d\'erreurs', explication:'Analyser ses erreurs empêche de les répéter.' },
+  ],
+  'Français|Exercices': [
+    { text:'📖 Relire la règle grammaticale concernée', principe:'Lecture active', explication:'Comprendre la règle avant de l\'appliquer.' },
+    { text:'✏️ Faire l\'exercice en appliquant la règle', principe:'Pratique délibérée', explication:'Appliquer consciemment la règle la grave dans ta mémoire.' },
+    { text:'👂 Relire chaque phrase à voix haute', principe:'Encodage multiple', explication:'Entendre ce qu\'on écrit aide à repérer les erreurs.' },
+    { text:'🔍 Corriger en consultant la règle si doute', principe:'Feedback immédiat', explication:'Vérifier tout de suite aide ton cerveau à corriger.' },
+    { text:'📝 Noter la règle que tu oublies souvent', principe:'Métacognition', explication:'Savoir ce qu\'on oublie souvent, c\'est savoir où travailler.' },
+  ],
+  'Anglais|Exercices': [
+    { text:'📖 Relire le vocabulaire ou la règle concernée', principe:'Lecture active', explication:'Comprendre avant d\'appliquer.' },
+    { text:'✏️ Faire l\'exercice', principe:'Pratique délibérée', explication:'Appliquer consciemment ancre la règle en mémoire.' },
+    { text:'👂 Lire tes réponses à voix haute', principe:'Encodage multiple', explication:'Entendre ce qu\'on dit aide à sentir si c\'est juste.' },
+    { text:'✅ Corriger et noter ce que tu confonds', principe:'Correction d\'erreurs + Métacognition', explication:'Repérer ses points faibles, c\'est savoir où progresser.' },
+  ],
+  'Défaut|Exercices': [
+    { text:'📖 Relire le cours lié à l\'exercice', principe:'Lecture active', explication:'Comprendre avant d\'appliquer.' },
+    { text:'✏️ Faire l\'exercice sans aide d\'abord', principe:'Récupération active', explication:'Se confronter à la difficulté d\'abord = progresser vraiment.' },
+    { text:'✅ Corriger et comprendre les erreurs', principe:'Correction d\'erreurs', explication:'Analyser ses erreurs empêche de les répéter.' },
+    { text:'❓ Refaire les exercices ratés', principe:'Pratique espacée', explication:'Refaire ce qu\'on a raté consolide la mémoire.' },
+  ],
+
+  // RÉVISION EXAMEN
+  'Maths|Révision examen': [
+    { text:'📋 Lister tous les chapitres à réviser', principe:'Planification', explication:'Voir tout ce qu\'il y a à faire évite de paniquer.' },
+    { text:'📖 Relire chaque chapitre et ses formules', principe:'Lecture active', explication:'Tu lis pour comprendre, pas pour finir vite.' },
+    { text:'✏️ Refaire les exercices types sans regarder', principe:'Récupération active', explication:'Forcer ton cerveau à retrouver = mémoriser vraiment.' },
+    { text:'🔁 Réciter formules + méthodes sans support', principe:'Récupération active', explication:'Ce que tu retrouves seule, tu le sais vraiment.' },
+    { text:'⏱ Faire un mini-test chronométré', principe:'Simulation d\'examen', explication:'S\'entraîner dans les mêmes conditions que l\'exam réduit le stress.' },
+    { text:'❓ Revoir seulement ce qui est encore flou', principe:'Pratique ciblée', explication:'Concentrer son énergie là où ça manque, pas partout.' },
+  ],
+  'Français|Révision examen': [
+    { text:'📋 Lister les règles et notions au programme', principe:'Planification', explication:'Voir tout ce qu\'il y a à faire évite de paniquer.' },
+    { text:'📖 Relire chaque règle', principe:'Lecture active', explication:'Tu lis pour comprendre, pas pour finir vite.' },
+    { text:'✏️ Faire des exercices variés sur chaque règle', principe:'Pratique variée', explication:'Varier les exercices rend la connaissance plus solide.' },
+    { text:'🗣 Dicter un paragraphe à voix haute et corriger', principe:'Encodage multiple', explication:'Voir + écrire + entendre = 3 chemins vers ta mémoire.' },
+    { text:'🔁 Règle cachée → la retrouver de mémoire', principe:'Récupération active', explication:'Forcer ton cerveau à retrouver = mémoriser vraiment.' },
+  ],
+  'Anglais|Révision examen': [
+    { text:'📋 Lister vocabulaire + grammaire à réviser', principe:'Planification', explication:'Voir tout ce qu\'il y a à faire évite de paniquer.' },
+    { text:'📸 Réviser les flashcards (Anki ou papier)', principe:'Répétition espacée', explication:'Revoir au bon moment empêche l\'oubli de s\'installer.' },
+    { text:'👂 Écouter et répéter des phrases', principe:'Encodage multiple', explication:'Entendre + répéter = ancrer la langue dans ta mémoire.' },
+    { text:'✏️ Écrire un petit texte avec les mots clés', principe:'Effet de génération', explication:'Produire soi-même ancre bien mieux que recopier.' },
+    { text:'🔁 Se faire interroger par quelqu\'un', principe:'Simulation d\'examen', explication:'Répondre sous pression = s\'entraîner dans les vraies conditions.' },
+  ],
+  'Histoire-Géo|Révision examen': [
+    { text:'📋 Faire une frise chronologique du chapitre', principe:'Effet de génération', explication:'Construire soi-même ancre bien mieux que recopier.' },
+    { text:'🗺 Faire un schéma de synthèse', principe:'Effet de génération', explication:'Organiser les idées en schéma aide à les mémoriser.' },
+    { text:'❓ Écrire 5 questions possibles d\'exam', principe:'Auto-questionnement', explication:'Anticiper les questions du prof = comprendre en profondeur.' },
+    { text:'🔁 Répondre sans regarder le cours', principe:'Récupération active', explication:'Forcer ton cerveau à retrouver = mémoriser vraiment.' },
+    { text:'🗣 Raconter le chapitre à voix haute', principe:'Technique Feynman', explication:'Si tu peux raconter sans notes, tu maîtrises le sujet.' },
+  ],
+  'Sciences|Révision examen': [
+    { text:'📋 Lister les notions clés et schémas importants', principe:'Planification', explication:'Voir tout ce qu\'il y a à faire évite de paniquer.' },
+    { text:'📖 Refaire les schémas de mémoire', principe:'Récupération active', explication:'Forcer ton cerveau à retrouver = mémoriser vraiment.' },
+    { text:'❓ Faire les questions du manuel', principe:'Pratique variée', explication:'Varier les exercices rend la connaissance plus solide.' },
+    { text:'🔁 Répondre sans regarder', principe:'Récupération active', explication:'Ce que tu retrouves seule, tu le sais vraiment.' },
+    { text:'✅ Vérifier et corriger', principe:'Feedback immédiat', explication:'Savoir tout de suite si c\'est juste aide ton cerveau à corriger.' },
+  ],
+  'Défaut|Révision examen': [
+    { text:'📋 Lister tout ce qui est au programme', principe:'Planification', explication:'Voir tout ce qu\'il y a à faire évite de paniquer.' },
+    { text:'📖 Relire le cours chapitre par chapitre', principe:'Lecture active', explication:'Tu lis pour comprendre, pas pour finir vite.' },
+    { text:'✏️ Faire des exercices sur chaque partie', principe:'Pratique variée', explication:'Varier les exercices rend la connaissance plus solide.' },
+    { text:'🔁 Se tester sans regarder le cours', principe:'Récupération active', explication:'Forcer ton cerveau à retrouver = mémoriser vraiment.' },
+    { text:'❓ Revoir ce qui est encore flou', principe:'Pratique ciblée', explication:'Concentrer son énergie là où ça manque.' },
+  ],
+
+  // DEVOIR ÉCRIT
+  'Français|Devoir écrit': [
+    { text:'📖 Lire attentivement la consigne 2 fois', principe:'Lecture active', explication:'Bien comprendre la question avant de répondre.' },
+    { text:'💡 Faire un brouillon : idées en vrac', principe:'Brainstorming', explication:'Vider sa tête d\'abord libère de la place pour organiser.' },
+    { text:'🗂 Organiser : intro / développement / conclusion', principe:'Structure', explication:'Un plan clair = un devoir clair.' },
+    { text:'✏️ Écrire le devoir au propre', principe:'Effet de génération', explication:'Produire soi-même consolide les idées.' },
+    { text:'🔍 Relire en cherchant les fautes', principe:'Auto-correction', explication:'Une relecture ciblée est plus efficace qu\'une relecture globale.' },
+    { text:'👂 Relire à voix haute', principe:'Encodage multiple', explication:'Entendre ce qu\'on a écrit révèle ce qui ne sonne pas bien.' },
+  ],
+  'Histoire-Géo|Devoir écrit': [
+    { text:'📖 Lire la question et souligner les mots clés', principe:'Lecture active', explication:'Identifier exactement ce qu\'on te demande.' },
+    { text:'💡 Noter au brouillon tout ce que tu sais', principe:'Brainstorming', explication:'Vider sa tête d\'abord libère de la place pour organiser.' },
+    { text:'🗂 Faire un plan (2-3 parties)', principe:'Structure', explication:'Un plan clair = un devoir clair.' },
+    { text:'✏️ Rédiger en citant des exemples précis', principe:'Élaboration', explication:'Les exemples prouvent qu\'on a vraiment compris.' },
+    { text:'🔍 Relire et vérifier les dates / noms', principe:'Auto-correction', explication:'Une relecture ciblée est plus efficace qu\'une relecture globale.' },
+  ],
+  'Défaut|Devoir écrit': [
+    { text:'📖 Lire la consigne attentivement', principe:'Lecture active', explication:'Bien comprendre la question avant de répondre.' },
+    { text:'💡 Brouillon : noter toutes tes idées', principe:'Brainstorming', explication:'Vider sa tête d\'abord libère de la place pour organiser.' },
+    { text:'🗂 Faire un plan', principe:'Structure', explication:'Un plan clair = un devoir clair.' },
+    { text:'✏️ Rédiger au propre', principe:'Effet de génération', explication:'Produire soi-même consolide les idées.' },
+    { text:'🔍 Relire et corriger', principe:'Auto-correction', explication:'Une relecture ciblée est plus efficace qu\'une relecture globale.' },
+  ],
+
+  // LECTURE
+  'Français|Lecture': [
+    { text:'📖 Lire le texte 1 fois sans t\'arrêter', principe:'Lecture globale', explication:'Avoir une vue d\'ensemble avant de rentrer dans les détails.' },
+    { text:'❓ Écrire en 2 phrases ce que tu as compris', principe:'Récupération active', explication:'Reformuler prouve qu\'on a vraiment compris.' },
+    { text:'🔍 Relire en cherchant les mots inconnus', principe:'Élaboration', explication:'Comprendre chaque mot = comprendre vraiment le texte.' },
+    { text:'✏️ Annoter : ce qui est important ou bizarre', principe:'Lecture active', explication:'Annoter t\'oblige à réfléchir à ce que tu lis.' },
+    { text:'💭 Que ressent le personnage ? Pourquoi ?', principe:'Inférence', explication:'Aller au-delà des mots = comprendre en profondeur.' },
+  ],
+  'Défaut|Lecture': [
+    { text:'📖 Lire le texte 1 fois', principe:'Lecture globale', explication:'Avoir une vue d\'ensemble avant les détails.' },
+    { text:'❓ Résumer en 2-3 phrases', principe:'Récupération active', explication:'Reformuler prouve qu\'on a vraiment compris.' },
+    { text:'🔍 Relire les passages difficiles', principe:'Lecture active', explication:'Ralentir là où c\'est dur, accélérer où c\'est clair.' },
+    { text:'✏️ Noter les points importants', principe:'Effet de génération', explication:'Écrire soi-même ce qui compte ancre mieux que surligner.' },
+  ],
+
+  // RECHERCHE
+  'Défaut|Recherche': [
+    { text:'❓ Écrire la question exacte à laquelle tu dois répondre', principe:'Clarification d\'objectif', explication:'Savoir exactement ce qu\'on cherche évite de se perdre.' },
+    { text:'🔍 Chercher 2-3 sources différentes', principe:'Pensée critique', explication:'Croiser les sources évite de prendre pour vrai n\'importe quoi.' },
+    { text:'✏️ Noter les infos importantes dans tes propres mots', principe:'Élaboration', explication:'Reformuler avec ses mots prouve qu\'on a compris.' },
+    { text:'🗂 Organiser les infos (plan)', principe:'Structure', explication:'Organiser ses idées avant d\'écrire = produire quelque chose de clair.' },
+    { text:'✅ Vérifier qu\'on a répondu à la question de départ', principe:'Métacognition', explication:'Revenir à l\'objectif de départ évite de partir hors sujet.' },
+  ],
+};
+
+function getStepSuggestions(mat, type){
+  const matNorm = (mat||'').trim();
+  return STEP_DB[`${matNorm}|${type}`] || STEP_DB[`Défaut|${type}`] || [
+    { text:'📖 Lire le cours', principe:'Lecture active', explication:'Tu lis pour comprendre, pas pour finir vite.' },
+    { text:'✏️ Faire le travail demandé', principe:'Pratique délibérée', explication:'Appliquer consciemment ancre en mémoire.' },
+    { text:'✅ Vérifier son travail', principe:'Auto-correction', explication:'Relire ciblé est plus efficace qu\'une relecture globale.' },
+  ];
+}
+
+function refreshStepSuggestions(){
+  const mat  = document.getElementById('nt-mat')?.value || '';
+  const type = document.getElementById('nt-type')?.value;
+  if(!type) return;
+  const suggestions = getStepSuggestions(mat, type);
+  selectedSteps = new Set(suggestions.map((_,i)=>i));
+  renderStepSuggestions(suggestions);
+}
+
+function renderStepSuggestions(suggestions){
+  const container = document.getElementById('step-suggestions');
+  if(!container) return;
+  container.innerHTML = `
+    <div style="font-size:12px;font-weight:800;color:var(--text2);margin-bottom:6px;margin-top:4px;">
+      🧠 Étapes suggérées — coche celles que tu veux :
+    </div>
+    ${suggestions.map((s,i)=>`
+      <div onclick="toggleSuggestion(${i})" id="sug-${i}" style="display:flex;align-items:flex-start;gap:8px;padding:8px 10px;border-radius:10px;margin-bottom:5px;cursor:pointer;background:${selectedSteps.has(i)?'var(--purple-light)':'var(--surface2)'};border:1.5px solid ${selectedSteps.has(i)?'var(--purple-mid)':'transparent'};transition:all 0.15s;">
+        <div style="width:18px;height:18px;border-radius:50%;flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;background:${selectedSteps.has(i)?'var(--purple)':'white'};border:2px solid ${selectedSteps.has(i)?'var(--purple)':'var(--purple-mid)'};">
+          ${selectedSteps.has(i)?'<span style="color:white;font-size:11px;font-weight:900;">✓</span>':''}
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13px;font-weight:700;color:var(--text);line-height:1.3;">${s.text}</div>
+          <div style="display:flex;align-items:center;gap:5px;margin-top:3px;">
+            <span style="font-size:10px;font-weight:800;padding:1px 7px;border-radius:20px;background:${selectedSteps.has(i)?'var(--purple)':'var(--text3)'};color:white;white-space:nowrap;">${s.principe}</span>
+            <span style="font-size:11px;color:var(--text3);font-weight:600;font-style:italic;">${s.explication}</span>
+          </div>
+        </div>
+      </div>`).join('')}`;
+  window._currentSuggestions = suggestions;
+}
+
+function toggleSuggestion(i){
+  if(selectedSteps.has(i)) selectedSteps.delete(i); else selectedSteps.add(i);
+  renderStepSuggestions(window._currentSuggestions);
+}
+
+function addCustomStep(){
+  const id = 'cs-'+Date.now();
+  customSteps.push({id, text:''});
+  const container = document.getElementById('custom-steps');
+  if(!container) return;
+  const div = document.createElement('div');
+  div.style.cssText = 'display:flex;align-items:center;gap:6px;';
+  div.innerHTML = `<input type="text" id="${id}" placeholder="Ton étape personnalisée..." style="flex:1;padding:7px 10px;border-radius:10px;border:1.5px solid var(--purple-mid);font-family:Nunito,sans-serif;font-size:13px;font-weight:600;color:var(--text);background:white;">
+    <span onclick="removeCustomStep('${id}')" style="font-size:18px;color:var(--text3);cursor:pointer;padding:4px;">✕</span>`;
+  container.appendChild(div);
+  document.getElementById(id)?.focus();
+}
+
+function removeCustomStep(id){
+  customSteps = customSteps.filter(s=>s.id!==id);
+  const el = document.getElementById(id)?.parentElement;
+  if(el) el.remove();
+}
+
+function addTask(idx){
+  const t = document.getElementById('nt-title')?.value?.trim();
+  if(!t) return;
+  const m  = document.getElementById('nt-mat')?.value;
+  const tp = document.getElementById('nt-type')?.value;
+
+  // Récupérer étapes suggérées sélectionnées
+  const sugg = (window._currentSuggestions || []).filter((_,i)=>selectedSteps.has(i)).map(s=>s.text);
+
+  // Récupérer étapes personnalisées
+  const custom = customSteps.map(cs => document.getElementById(cs.id)?.value?.trim()).filter(Boolean);
+
+  const allSteps = [...sugg, ...custom].map(s=>({text:s, done:false}));
+
+  D.tasks.push({ id: Date.now(), dayIdx:idx, title:t, matiere:m, type:tp, done:false, steps: allSteps.length ? allSteps : null });
+  D.addingDay = null;
+  selectedSteps = new Set();
+  customSteps = [];
+  window._currentSuggestions = [];
+  save(); renderWeek();
+  showToast('Tâche ajoutée ! 📚');
+}
+
+function toggleTask(id){
+  const t = D.tasks.find(t=>t.id===id);
+  if(t){ t.done = !t.done; save(); renderWeek(); if(t.done) showToast('Super ! 🎉'); }
+}
+function toggleStep(tid, si){
+  const t = D.tasks.find(t=>t.id===tid);
+  if(t && t.steps){ t.steps[si].done = !t.steps[si].done; save(); renderWeek(); }
+}
+function deleteTask(id){ D.tasks = D.tasks.filter(t=>t.id!==id); save(); renderWeek(); }
+
+// ── EXAMS ──
+function renderExams(){
+  const sorted = [...D.exams].sort((a,b)=>new Date(a.date)-new Date(b.date));
+  let html = '';
+  if(!sorted.length) html = '<div class="empty">Aucun examen planifié.<br>Ajoute-en un pour commencer !</div>';
+  sorted.forEach(ex => {
+    const d = daysUntil(ex.date);
+    const uc = d<=2?'urgent':d<=5?'soon':'ok';
+    const ul = d<0?'Passé':d===0?"Aujourd'hui !":`Dans ${d} jour${d>1?'s':''}`;
+    const avgPct = Math.round(ex.prepSteps.reduce((s,p)=>s+p.pct,0)/ex.prepSteps.length);
+    const fillColor = d<=2?'var(--red)':d<=5?'var(--amber)':'var(--green)';
+    const dateStr = new Date(ex.date).toLocaleDateString('fr-CH',{weekday:'long',day:'numeric',month:'long'});
+    html += `<div class="exam-card">
+      <div class="exam-header">
+        <div>
+          <div class="exam-mat">${ex.matiere}</div>
+          ${ex.sujet?`<div class="exam-sujet">${ex.sujet}</div>`:''}
+        </div>
+        <span class="urgency-pill ${uc}">${ul}</span>
+      </div>
+      <div class="exam-date-str">📅 ${dateStr}</div>
+      <div class="exam-prep-label">Préparation — ${avgPct}%</div>
+      <div class="exam-global"><div class="exam-global-track"><div class="exam-global-fill" style="width:${avgPct}%;background:${fillColor};"></div></div></div>
+      <div style="margin-top:12px;">
+        ${ex.prepSteps.map((s,i)=>`<div class="prep-step">
+          <span class="prep-step-lbl">${s.label}</span>
+          <input type="range" class="prep-range" min="0" max="100" step="25" value="${s.pct}" onchange="updatePrep(${ex.id},${i},this.value)" oninput="updatePrep(${ex.id},${i},this.value)">
+          <span class="prep-pct" id="pp-${ex.id}-${i}">${s.pct}%</span>
+        </div>`).join('')}
+      </div>
+      <div class="exam-delete" onclick="deleteExam(${ex.id})">✕ Supprimer</div>
+    </div>`;
+  });
+  document.getElementById('exam-container').innerHTML = html;
+}
+
+function showAddExam(){ document.getElementById('add-exam-form').classList.remove('hidden'); }
+function hideAddExam(){ document.getElementById('add-exam-form').classList.add('hidden'); }
+function addExam(){
+  const m = document.getElementById('exam-mat').value.trim();
+  const s = document.getElementById('exam-sujet').value.trim();
+  const dt = document.getElementById('exam-date').value;
+  if(!m||!dt) return;
+  D.exams.push({ id:Date.now(), matiere:m, sujet:s, date:dt,
+    prepSteps:[
+      {label:'Relire le cours',pct:0},
+      {label:'Faire un résumé',pct:0},
+      {label:'Exercices',pct:0},
+      {label:'Se faire interroger',pct:0}
+    ]
+  });
+  save(); hideAddExam(); renderExams();
+  showToast('Examen ajouté ! 📝');
+}
+function updatePrep(eid,si,val){
+  const ex = D.exams.find(e=>e.id===eid);
+  if(ex){ ex.prepSteps[si].pct=parseInt(val); save(); }
+  const el = document.getElementById(`pp-${eid}-${si}`);
+  if(el) el.textContent = val+'%';
+  const avg = Math.round(ex.prepSteps.reduce((s,p)=>s+p.pct,0)/ex.prepSteps.length);
+  renderExams();
+}
+function deleteExam(id){ D.exams = D.exams.filter(e=>e.id!==id); save(); renderExams(); }
+
+// ── TIPS ──
+const TIPS = [
+  { icon:'⏱', color:'#EEE8FF', title:'Blocs de 20 minutes', desc:'Travaille 20 min, pause 5 min. Ton cerveau se concentre mieux sur de courtes périodes. (Méthode Pomodoro)' },
+  { icon:'1️⃣', color:'#E6F9F0', title:'Une chose à la fois', desc:'Ferme tout le reste. Réseaux, musique avec paroles, autres onglets. Juste ta tâche.' },
+  { icon:'📵', color:'#FDEEEC', title:'Téléphone dans une autre pièce', desc:'Le simple fait de le voir réduit ta concentration. Range-le hors de ta vue pendant les devoirs.' },
+  { icon:'✅', color:'#EAF3FB', title:'Commence facile', desc:'Commence toujours par quelque chose de rapide ou que tu sais faire. Ça lance la machine !' },
+  { icon:'🎧', color:'#FEF4DC', title:'Sons sans paroles', desc:'Musique instrumentale, bruit blanc ou sons de la nature. Les paroles "parlent" à ton cerveau et te déconcentrent.' },
+  { icon:'📸', color:'#FDECF3', title:'Photo du tableau', desc:'Si tu as du mal à tout noter en cours, prends une photo. Demande à ton prof si c\'est ok.' },
+  { icon:'🗣', color:'#E5F8F4', title:'Récite à voix haute', desc:'Après avoir lu ton cours, ferme le livre et explique-le comme si tu l\'enseignais. C\'est la meilleure façon de mémoriser.' },
+  { icon:'🌙', color:'#EEE8FF', title:'Révise avant de dormir', desc:'Ton cerveau consolide ce qu\'il a appris pendant ton sommeil. Une courte révision le soir vaut mieux qu\'une longue révision le matin.' },
+];
+function renderTips(){
+  document.getElementById('tips-container').innerHTML = TIPS.map(tip=>`
+    <div class="tip-card">
+      <div class="tip-icon" style="background:${tip.color};">${tip.icon}</div>
+      <div>
+        <div class="tip-title">${tip.title}</div>
+        <div class="tip-desc">${tip.desc}</div>
+      </div>
+    </div>`).join('');
+}
+
+// ── INIT ──
+if(D.energy) setEnergy(D.energy);
+if(!D.openDays.includes(todayIdx())) D.openDays.push(todayIdx());
+renderWeek();
+renderTips();
+</script>
+</body>
+</html>
