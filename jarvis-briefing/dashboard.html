@@ -1,0 +1,374 @@
+<title>Jarvis Briefing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: rapport de situation (SITREP) — en-tête de poste de commandement, synthèse, puis une fiche par domaine avec degré de danger 1–5 (échelle suisse des dangers naturels). */
+:root {
+  --bg: #eef1f4;
+  --surface: #ffffff;
+  --ink: #15202b;
+  --muted: #56636f;
+  --line: #d3dae1;
+  --accent: #b3261e;          /* rouge feu, utilisé avec retenue */
+  --accent-ink: #ffffff;
+  --panel: #18232f;           /* bandeau PC */
+  --panel-ink: #e9eef3;
+  --panel-muted: #9fb0bf;
+  --lv1: #3f8f4f; --lv2: #c9a400; --lv3: #e07b00; --lv4: #d23a1e; --lv5: #8e1b3a;
+  --lv-ink-dark: #15202b;
+  --impact-bg: #f6efe2;
+  --impact-line: #d9b77a;
+  --f-display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+  --f-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e151c; --surface: #16202a; --ink: #e4eaf0; --muted: #98a6b3; --line: #2a3744;
+    --accent: #ff6b5e; --accent-ink: #1a0b09; --panel: #0a1016; --panel-ink: #e9eef3; --panel-muted: #8a9bab;
+    --lv1: #5cb86c; --lv2: #e8c435; --lv3: #f59a2e; --lv4: #ff6a4d; --lv5: #e0527a;
+    --impact-bg: #2a2418; --impact-line: #7a6232;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e151c; --surface: #16202a; --ink: #e4eaf0; --muted: #98a6b3; --line: #2a3744;
+  --accent: #ff6b5e; --accent-ink: #1a0b09; --panel: #0a1016; --panel-ink: #e9eef3; --panel-muted: #8a9bab;
+  --lv1: #5cb86c; --lv2: #e8c435; --lv3: #f59a2e; --lv4: #ff6a4d; --lv5: #e0527a;
+  --impact-bg: #2a2418; --impact-line: #7a6232;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.55; }
+a { color: inherit; text-decoration-color: var(--muted); text-underline-offset: 2px; }
+a:hover { text-decoration-color: var(--accent); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.wrap { max-width: 1080px; margin: 0 auto; padding-inline: 16px; padding-block: 0 48px; }
+
+/* Bandeau PC */
+.cmd { background: var(--panel); color: var(--panel-ink); }
+.cmd-in { max-width: 1080px; margin: 0 auto; padding-inline: 16px; padding-block: 20px 22px; display: grid; gap: 14px; }
+.cmd-top { display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: baseline; justify-content: space-between; font-family: var(--f-mono); font-size: 12px; color: var(--panel-muted); letter-spacing: .04em; text-transform: uppercase; }
+.cmd h1 { margin: 0; font-family: var(--f-display); font-weight: 700; font-size: clamp(30px, 6vw, 46px); line-height: 1.02; letter-spacing: .01em; text-wrap: balance; }
+.cmd .lead { margin: 0; color: var(--panel-ink); max-width: 68ch; opacity: .92; }
+.controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.btn { font: 600 15px/1 var(--f-body); border: 0; border-radius: 6px; padding: 12px 18px; cursor: pointer; display: inline-flex; gap: 10px; align-items: center; }
+.btn-play { background: var(--accent); color: var(--accent-ink); }
+.btn-ghost { background: transparent; color: var(--panel-ink); border: 1px solid #3a4a5a; }
+.btn[disabled] { opacity: .5; cursor: default; }
+select { font: 14px var(--f-body); padding: 9px 10px; border-radius: 6px; border: 1px solid #3a4a5a; background: var(--panel); color: var(--panel-ink); max-width: 100%; }
+.speech-note { font-size: 12.5px; color: var(--panel-muted); flex-basis: 100%; }
+
+/* Synthèse */
+.summary { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 16px; margin-top: 22px; }
+@media (max-width: 760px) { .summary { grid-template-columns: minmax(0, 1fr); } }
+.box { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 18px; min-width: 0; }
+.label { font-family: var(--f-display); font-weight: 600; font-size: 14px; letter-spacing: .09em; text-transform: uppercase; color: var(--muted); margin: 0 0 10px; }
+.keys { margin: 0; padding: 0; list-style: none; display: grid; gap: 12px; }
+.keys li { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 10px; }
+.keys .n { font-family: var(--f-display); font-weight: 700; font-size: 22px; line-height: 1.1; color: var(--accent); }
+.wx-temp { font-family: var(--f-display); font-weight: 600; font-size: 40px; line-height: 1; font-variant-numeric: tabular-nums; }
+.wx-temp small { font-size: 18px; color: var(--muted); font-weight: 500; }
+.wx p { margin: 8px 0 0; }
+.src { font-size: 12.5px; color: var(--muted); }
+
+/* Échelle de danger */
+.scale { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 18px; font-size: 12.5px; color: var(--muted); align-items: center; }
+.scale span { display: inline-flex; gap: 6px; align-items: center; }
+.dot { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+
+/* Fiches thématiques */
+.themes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 16px; }
+@media (max-width: 760px) { .themes { grid-template-columns: minmax(0, 1fr); } }
+.theme { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; display: flex; flex-direction: column; min-width: 0; }
+.theme-h { display: flex; gap: 12px; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid var(--line); }
+.theme-h h2 { margin: 0; font-family: var(--f-display); font-weight: 700; font-size: 23px; letter-spacing: .02em; text-transform: uppercase; line-height: 1.1; }
+.lvl { flex: none; font: 600 12.5px/1 var(--f-body); padding: 6px 10px; border-radius: 999px; color: #fff; white-space: nowrap; }
+.lvl[data-l="1"] { background: var(--lv1); }
+.lvl[data-l="2"] { background: var(--lv2); color: var(--lv-ink-dark); }
+.lvl[data-l="3"] { background: var(--lv3); color: var(--lv-ink-dark); }
+.lvl[data-l="4"] { background: var(--lv4); }
+.lvl[data-l="5"] { background: var(--lv5); }
+.theme-b { padding: 14px 18px 18px; display: grid; gap: 12px; }
+.theme-sum { margin: 0; font-weight: 500; }
+.items { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; }
+.items li { padding-left: 14px; border-left: 2px solid var(--line); }
+.items .src { display: block; margin-top: 2px; }
+.impact { background: var(--impact-bg); border: 1px solid var(--impact-line); border-radius: 6px; padding: 10px 12px; font-size: 14.5px; }
+.impact b { font-family: var(--f-display); letter-spacing: .06em; text-transform: uppercase; font-size: 13px; display: block; margin-bottom: 2px; }
+
+.lower { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; margin-top: 16px; }
+@media (max-width: 760px) { .lower { grid-template-columns: minmax(0, 1fr); } }
+.watch { margin: 0; padding-left: 18px; display: grid; gap: 6px; }
+.caveat { font-size: 13.5px; color: var(--muted); margin: 0; }
+details.script summary { cursor: pointer; font-weight: 600; }
+details.script pre { white-space: pre-wrap; font-family: var(--f-body); font-size: 14px; margin: 12px 0 0; max-height: 360px; overflow: auto; }
+.archive { display: flex; flex-wrap: wrap; gap: 8px; }
+.archive button { font: 500 13px var(--f-mono); padding: 7px 10px; border-radius: 6px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; }
+.archive button[aria-current="true"] { border-color: var(--accent); color: var(--accent); }
+.music a { font-weight: 600; }
+
+.empty { margin-top: 28px; background: var(--surface); border: 1px dashed var(--line); border-radius: 8px; padding: 28px 20px; }
+.empty h2 { margin: 0 0 8px; font-family: var(--f-display); font-size: 26px; }
+@media (prefers-reduced-motion: no-preference) { .theme { transition: border-color .2s; } .theme:hover { border-color: var(--muted); } }
+</style>
+
+<header class="cmd">
+  <div class="cmd-in">
+    <div class="cmd-top"><span id="stamp">Briefing quotidien · en attente</span><span id="gen"></span></div>
+    <h1 id="headline">Bonjour Commandant.</h1>
+    <p class="lead" id="lead">Le briefing du jour s'affichera ici dès sa génération, chaque matin vers 05h30.</p>
+    <div class="controls">
+      <button class="btn btn-play" id="play" type="button" disabled>▶ Écouter le briefing</button>
+      <button class="btn btn-ghost" id="stop" type="button" hidden>■ Arrêter</button>
+      <label for="voice" class="src" style="color:var(--panel-muted)">Voix</label>
+      <select id="voice"></select>
+      <select id="rate" aria-label="Vitesse">
+        <option value="0.95">Vitesse 0,95</option>
+        <option value="1" selected>Vitesse 1,0</option>
+        <option value="1.1">Vitesse 1,1</option>
+        <option value="1.2">Vitesse 1,2</option>
+      </select>
+      <span class="speech-note" id="speechNote"></span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div id="content" hidden>
+    <section class="summary">
+      <div class="box">
+        <p class="label">À retenir ce matin</p>
+        <ol class="keys" id="keys"></ol>
+      </div>
+      <div class="box wx">
+        <p class="label" id="wxLabel">Météo · Villars-sur-Glâne</p>
+        <div class="wx-temp" id="wxTemp"></div>
+        <p id="wxText"></p>
+        <p class="src" id="wxSrc"></p>
+      </div>
+    </section>
+
+    <div class="scale" aria-label="Échelle des degrés">
+      <span>Degré :</span>
+      <span><i class="dot" style="background:var(--lv1)"></i>1 faible</span>
+      <span><i class="dot" style="background:var(--lv2)"></i>2 limité</span>
+      <span><i class="dot" style="background:var(--lv3)"></i>3 marqué</span>
+      <span><i class="dot" style="background:var(--lv4)"></i>4 fort</span>
+      <span><i class="dot" style="background:var(--lv5)"></i>5 très fort</span>
+    </div>
+
+    <section class="themes" id="themes"></section>
+
+    <section class="lower">
+      <div class="box">
+        <p class="label">À surveiller</p>
+        <ul class="watch" id="watch"></ul>
+      </div>
+      <div class="box" style="display:grid;gap:14px">
+        <div>
+          <p class="label">Fiabilité</p>
+          <p class="caveat" id="caveat"></p>
+        </div>
+        <div class="music">
+          <p class="label">Fin de briefing</p>
+          <p class="caveat">Thunderstruck, AC/DC :
+            <a href="https://open.spotify.com/search/Thunderstruck%20AC%2FDC" target="_blank" rel="noopener">Spotify</a> ·
+            <a href="https://music.apple.com/ch/search?term=thunderstruck%20ac%2Fdc" target="_blank" rel="noopener">Apple Music</a></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="box" style="margin-top:16px">
+      <details class="script">
+        <summary>Texte lu par l'audio</summary>
+        <pre id="script"></pre>
+      </details>
+    </section>
+
+    <section style="margin-top:16px">
+      <p class="label">Briefings précédents</p>
+      <div class="archive" id="archive"></div>
+    </section>
+  </div>
+
+  <section class="empty" id="empty">
+    <h2>Aucun briefing pour l'instant</h2>
+    <p>La tâche planifiée génère le briefing chaque matin vers 05h30 et l'enregistre ici. Le premier apparaîtra automatiquement, sans recharger la page.</p>
+    <p class="src" id="dbNote"></p>
+  </section>
+</main>
+
+<script>
+(function () {
+  var LV = { 1: "1 · faible", 2: "2 · limité", 3: "3 · marqué", 4: "4 · fort", 5: "5 · très fort" };
+  var briefings = [];
+  var currentId = null;
+  var $ = function (id) { return document.getElementById(id); };
+
+  function el(tag, attrs, text) {
+    var e = document.createElement(tag);
+    if (attrs) for (var k in attrs) e.setAttribute(k, attrs[k]);
+    if (text != null) e.textContent = text;
+    return e;
+  }
+  function srcLine(it) {
+    var s = el("span", { class: "src" });
+    if (it.source) {
+      if (it.url && /^https:\/\//.test(it.url)) {
+        var a = el("a", { href: it.url, target: "_blank", rel: "noopener" }, it.source);
+        s.appendChild(a);
+      } else s.textContent = it.source;
+    }
+    if (it.date) s.appendChild(document.createTextNode((it.source ? " · " : "") + it.date));
+    return s;
+  }
+  function fmtDate(iso) {
+    try {
+      var d = new Date(iso + "T12:00:00");
+      return d.toLocaleDateString("fr-CH", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+    } catch (e) { return iso; }
+  }
+
+  function render() {
+    var b = briefings.find(function (x) { return x.id === currentId; }) || briefings[0];
+    if (!b) { $("content").hidden = true; $("empty").hidden = false; $("play").disabled = true; return; }
+    currentId = b.id;
+    var d = b.data;
+    $("empty").hidden = true; $("content").hidden = false;
+    $("stamp").textContent = "Briefing · " + fmtDate(d.date);
+    $("gen").textContent = d.generated_at ? "Généré " + new Date(d.generated_at).toLocaleTimeString("fr-CH", { hour: "2-digit", minute: "2-digit" }) : "";
+    $("headline").textContent = d.headline || "Bonjour Commandant.";
+    $("lead").textContent = d.lead || "";
+    $("play").disabled = !("speechSynthesis" in window) || !d.audio_script;
+
+    var keys = $("keys"); keys.textContent = "";
+    (d.key_points || []).forEach(function (k, i) {
+      var li = el("li"); li.appendChild(el("span", { class: "n" }, String(i + 1)));
+      li.appendChild(el("span", null, k)); keys.appendChild(li);
+    });
+
+    var w = d.weather || {};
+    $("wxLabel").textContent = "Météo · " + (w.location || "Villars-sur-Glâne");
+    var t = $("wxTemp"); t.textContent = "";
+    if (w.tmax != null) {
+      t.appendChild(document.createTextNode(w.tmax + "°"));
+      if (w.tmin != null) t.appendChild(el("small", null, " / " + w.tmin + "°"));
+    }
+    $("wxText").textContent = w.summary || "";
+    $("wxSrc").textContent = w.source ? "Source : " + w.source : "";
+
+    var th = $("themes"); th.textContent = "";
+    (d.themes || []).forEach(function (x) {
+      var card = el("article", { class: "theme" });
+      var h = el("div", { class: "theme-h" });
+      h.appendChild(el("h2", null, x.title));
+      var lv = Math.min(5, Math.max(1, Number(x.level) || 1));
+      h.appendChild(el("span", { class: "lvl", "data-l": String(lv), title: "Degré de vigilance" }, LV[lv]));
+      card.appendChild(h);
+      var body = el("div", { class: "theme-b" });
+      if (x.summary) body.appendChild(el("p", { class: "theme-sum" }, x.summary));
+      var ul = el("ul", { class: "items" });
+      (x.items || []).forEach(function (it) {
+        var li = el("li", null, it.text); li.appendChild(srcLine(it)); ul.appendChild(li);
+      });
+      body.appendChild(ul);
+      if (x.impact) {
+        var im = el("div", { class: "impact" });
+        im.appendChild(el("b", null, "Impact pour toi"));
+        im.appendChild(document.createTextNode(x.impact));
+        body.appendChild(im);
+      }
+      card.appendChild(body); th.appendChild(card);
+    });
+
+    var wl = $("watch"); wl.textContent = "";
+    (d.watch || []).forEach(function (x) { wl.appendChild(el("li", null, x)); });
+    $("caveat").textContent = d.caveats || "";
+    $("script").textContent = d.audio_script || "";
+
+    var ar = $("archive"); ar.textContent = "";
+    briefings.forEach(function (x) {
+      var btn = el("button", { type: "button", "aria-current": x.id === currentId ? "true" : "false" }, x.id);
+      btn.addEventListener("click", function () { currentId = x.id; stopSpeech(); render(); window.scrollTo(0, 0); });
+      ar.appendChild(btn);
+    });
+  }
+
+  /* ---------- Synthèse vocale (gratuite, intégrée à l'appareil) ---------- */
+  var synth = window.speechSynthesis;
+  var voices = [];
+  function pickDefault(list) {
+    var prefs = [/thomas/i, /daniel/i, /nicolas/i, /premium|enhanced|améliorée/i];
+    var fr = list.filter(function (v) { return /^fr/i.test(v.lang); });
+    for (var i = 0; i < prefs.length; i++) {
+      var m = fr.find(function (v) { return prefs[i].test(v.name); });
+      if (m) return m;
+    }
+    return fr.find(function (v) { return /fr-CH/i.test(v.lang); }) || fr[0] || list[0];
+  }
+  function loadVoices() {
+    if (!synth) return;
+    voices = synth.getVoices().filter(function (v) { return /^fr/i.test(v.lang); });
+    var sel = $("voice"); sel.textContent = "";
+    if (!voices.length) { sel.appendChild(el("option", { value: "" }, "Voix par défaut")); return; }
+    var saved = null; try { saved = localStorage.getItem("jarvis.voice"); } catch (e) {}
+    var def = voices.find(function (v) { return v.name === saved; }) || pickDefault(voices);
+    voices.forEach(function (v) {
+      var o = el("option", { value: v.name }, v.name + " (" + v.lang + ")");
+      if (def && v.name === def.name) o.selected = true;
+      sel.appendChild(o);
+    });
+  }
+  if (synth) {
+    loadVoices();
+    if (typeof synth.addEventListener === "function") synth.addEventListener("voiceschanged", loadVoices);
+    else synth.onvoiceschanged = loadVoices;
+  } else {
+    $("speechNote").textContent = "La lecture audio n'est pas disponible dans cette vue. Utilise le raccourci iPhone ou ouvre la page dans Safari.";
+  }
+  $("voice").addEventListener("change", function (e) { try { localStorage.setItem("jarvis.voice", e.target.value); } catch (x) {} });
+
+  function chunks(text) {
+    // Découpe en phrases : iOS coupe les longues lectures.
+    return (text.match(/[^.!?\n]+[.!?]*\s*/g) || [text]).map(function (s) { return s.trim(); }).filter(Boolean);
+  }
+  function stopSpeech() {
+    if (synth) synth.cancel();
+    $("stop").hidden = true; $("play").hidden = false;
+  }
+  $("stop").addEventListener("click", stopSpeech);
+  $("play").addEventListener("click", function () {
+    var b = briefings.find(function (x) { return x.id === currentId; });
+    if (!synth || !b || !b.data.audio_script) return;
+    synth.cancel();
+    var voice = voices.find(function (v) { return v.name === $("voice").value; });
+    var rate = Number($("rate").value) || 1;
+    var parts = chunks(b.data.audio_script);
+    parts.forEach(function (p, i) {
+      var u = new SpeechSynthesisUtterance(p);
+      u.lang = voice ? voice.lang : "fr-CH";
+      if (voice) u.voice = voice;
+      u.rate = rate; u.pitch = 0.95;
+      if (i === parts.length - 1) u.onend = function () { $("stop").hidden = true; $("play").hidden = false; };
+      synth.speak(u);
+    });
+    $("play").hidden = true; $("stop").hidden = false;
+  });
+
+  /* ---------- Données ---------- */
+  (async function () {
+    var db = window.claude && window.claude.use ? await window.claude.use("db") : null;
+    if (!db) { $("dbNote").textContent = "Connexion aux données indisponible dans cette vue. Ouvre la page sur claude.ai en étant connecté."; return; }
+    db.collection("briefings").orderBy("date", "desc").limit(14).onSnapshot(function (snap) {
+      briefings = snap.docs.filter(function (s) { return s.exists; }).map(function (s) { return { id: s.id, data: s.data() }; });
+      if (currentId && !briefings.some(function (x) { return x.id === currentId; })) currentId = null;
+      render();
+    }, function (err) {
+      $("dbNote").textContent = "Lecture des briefings impossible (" + err.code + "). Recharge la page dans un instant.";
+    });
+  })();
+})();
+</script>
